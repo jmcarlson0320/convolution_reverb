@@ -6,10 +6,10 @@ EXE = reverb
 $(EXE): main.o audio.o utils.o
 	$(CC) -o $@ $^ $(LIBS)
 
-tests: tests.o
+tests: tests.o audio.o utils.o
 	$(CC) -o run_tests $^ $(LIBS)
 
-tests.o: unit_test.h
+tests.o: unit_test.h defs.h
 audio.o: defs.h
 utils.o: defs.h
 

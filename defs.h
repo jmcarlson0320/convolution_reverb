@@ -4,17 +4,24 @@
 #define SUCCESS 1
 #define FAILURE 0
 
+#define NUM_CHANNELS 2
+
+struct float_frame {
+        float left;
+        float right;
+};
+
 struct sample_data {
-    float *samples;
-    int num_samples;
-    int index;
-    int sample_rate;
+        struct float_frame *frames;
+        int num_frames;
+        int index;
+        int sample_rate;
 };
 
 struct filter_data {
-    float *coeff;
-    int num_coeff;
-    float scale_factor; // recip of sum of coefficients, need to think about this more
+        float *coeff;
+        int num_coeff;
+        float scale_factor; // recip of sum of coefficients, need to think about this more
 };
 
 // audio.c
