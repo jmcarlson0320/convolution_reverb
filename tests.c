@@ -4,22 +4,29 @@
 int playAudioStereo()
 {
         struct sample_data data;
+        int result;
 
-        start_audio_systems();
-        read_samples_from_wavfile("piano2.wav", &data);
-        play_audio_samples(&data);
-        terminate_audio_systems();
-        free_sample_data(&data);
-        return PASS;
+        if (read_samples_from_wavfile("audio_files/piano2.wav", &data) == SUCCESS) {
+                start_audio_systems();
+                play_audio_samples(&data);
+                terminate_audio_systems();
+                free_sample_data(&data);
+                result = PASS;
+        } else {
+                result = FAIL;
+        }
+
+        return result;
 }
 
 int writeSamplesToFile()
 {
         struct sample_data data;
 
-        read_samples_from_wavfile("piano2.wav", &data);
-        write_samples_to_wavfile("out.wav", &data);
+        read_samples_from_wavfile("audio_files/piano2.wav", &data);
+        write_samples_to_wavfile("audio_files/out.wav", &data);
         free_sample_data(&data);
+
         return PASS;
 }
 

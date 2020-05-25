@@ -19,9 +19,9 @@ float map(float value, float srcMin, float srcMax, float destMin, float destMax)
 int convolve(float *x, int len, float *h, int M, int n, float *y_n)
 {
         if (!x || !h || !y_n)
-                return FAILURE;
+                return ERROR;
         if (n >= len)
-                return FAILURE;
+                return ERROR;
 
         float sum = 0;
         for (int k = n - M - 1; k <= n; k++) {

@@ -67,7 +67,7 @@ static int audioCallback(const void *inputBuffer,
         return 0;
 }
 
-void read_samples_from_wavfile(char *filename, struct sample_data *data)
+int read_samples_from_wavfile(char *filename, struct sample_data *data)
 {
         struct short_frame {
                 short left;
@@ -80,13 +80,13 @@ void read_samples_from_wavfile(char *filename, struct sample_data *data)
         info.format = 0;
         f = sf_open(filename, SFM_READ, &info);
         if (f == NULL) {
-                printf("could not open %s.wav\n", filename);
-                return;
+                printf("could not open %s\n", filename);
+                return ERROR;
         }
         if (info.channels != 2) {
                 printf("could not open %s.wav: file is not 2-channel\n",
                                 filename);
-                return;
+                return ERROR;
         }
         data->frames = malloc(sizeof(struct float_frame) * info.frames);
         data->num_frames = info.frames;
@@ -101,6 +101,7 @@ void read_samples_from_wavfile(char *filename, struct sample_data *data)
                 i++;
         }
         sf_close(f);
+        return SUCCESS;
 }
 
 void write_samples_to_wavfile(char *filename, struct sample_data *data)
