@@ -17,9 +17,9 @@ struct sample_data {
         int sample_rate;
 };
 
-struct filter_data {
-        float *coeff;
-        int num_coeff;
+struct impulse_response_data {
+        float *data;
+        int num_points;
         float scale_factor; // recip of sum of coefficients, need to think about this more
 };
 
@@ -30,10 +30,10 @@ int read_samples_from_wavfile(char *filename, struct sample_data *data);
 void write_samples_to_wavfile(char *filename, struct sample_data *data);
 void free_sample_data(struct sample_data *data);
 void play_audio_samples(struct sample_data *data);
-void build_filter(struct filter_data *filter, float f_c, float att);
-void apply_filter(struct sample_data *data, struct filter_data *filter);
-void read_coeff_from_file(char *path, struct filter_data *coeff);
-void write_coeff_to_file(char *path, struct filter_data *data);
+void build_filter(struct impulse_response_data *filter, float f_c, float att);
+void apply_impulse_response(struct sample_data *data, struct impulse_response_data *filter);
+void read_coeff_from_file(char *path, struct impulse_response_data *coeff);
+void write_coeff_to_file(char *path, struct impulse_response_data *data);
 
 // utils.c
 int convolve(float *x, int len, float *h, int M, int n, float *y_n);

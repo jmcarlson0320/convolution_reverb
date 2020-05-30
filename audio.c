@@ -157,35 +157,42 @@ void play_audio_samples(struct sample_data *data)
 
 // TODO
 // fix this filter code to work w/ stereo sample data
-/*
-void build_filter(struct filter_data *filter, float f_c, float att)
+void build_filter(struct impulse_response_data *filter, float f_c, float att)
 {
-        filter->num_coeff = estimate_req_filter_len(0.05, att);
-        filter->coeff = malloc(sizeof(float) * filter->num_coeff);
-        stack[stack_ptr++] = filter->coeff;
-        liquid_firdes_kaiser(filter->num_coeff, f_c, att, 0, filter->coeff);
+        filter->num_points = estimate_req_filter_len(0.05, att);
+        filter->data = malloc(sizeof(float) * filter->num_points);
+        liquid_firdes_kaiser(filter->num_points, f_c, att, 0, filter->data);
         float sum = 0;
-        for (int i = 0; i < filter->num_coeff; i++) {
-                sum += filter->coeff[i];
+        for (int i = 0; i < filter->num_points; i++) {
+                sum += filter->data[i];
         }
         filter->scale_factor = 1.0f / sum;
 }
 
-void apply_filter(struct sample_data *data, struct filter_data *filter)
+void apply_impulse_response(struct sample_data *data, struct impulse_response_data *filter)
 {
         // need to convolve with unaltered samples
-        struct float_frame orig_frames[data->num_frames];
+        float left_samples[data->num_frames];
+        float right_samples[data->num_frames];
 
         for (int i = 0; i < data->num_frames; i++) {
-                float result;
-                orig_frames[i] = data->frames[i];
-                convolve(orig_frames, data->num_frames, filter->coeff,
-                                filter->num_coeff, i, &result);
-                data->frames[i] = result * filter->scale_factor;
+            left_samples[i] = data->frames[i].left;
+            right_samples[i] = data->frames[i].right;
+        }
+
+        for (int i = 0; i < data->num_frames; i++) {
+                float left_result;
+                float right_result;
+                convolve(left_samples, data->num_frames, filter->data,
+                                filter->num_points, i, &left_result);
+                convolve(right_samples, data->num_frames, filter->data,
+                                filter->num_points, i, &right_result);
+                data->frames[i].left = left_result * filter->scale_factor;
+                data->frames[i].right = right_result * filter->scale_factor;
         }
 }
 
-void read_coeff_from_file(char *path, struct filter_data *data)
+void read_coeff_from_file(char *path, struct impulse_response_data *data)
 {
         FILE *in = fopen(path, "r");
         int size;
@@ -193,21 +200,19 @@ void read_coeff_from_file(char *path, struct filter_data *data)
         float value;
 
         fscanf(in, "# %d", &size);
-        data->coeff = malloc(sizeof(float) * size);
-        stack[stack_ptr++] = data->coeff;
+        data->data = malloc(sizeof(float) * size);
         for (int i = 0; i < size; i++) {
                 fscanf(in, "%d\t%f", &index, &value);
-                data->coeff[index] = value;
+                data->data[index] = value;
         }
         fclose(in);
-        data->num_coeff = size;
+        data->num_points = size;
 }
 
-void free_filter_data(struct filter_data *data)
+void free_filter_data(struct impulse_response_data *data)
 {
         if (data == NULL)
                 return;
-        free(data->coeff);
-        data->coeff = NULL;
+        free(data->data);
+        data->data = NULL;
 }
-*/
