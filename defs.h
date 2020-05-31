@@ -34,6 +34,8 @@ void build_filter(struct impulse_response_data *filter, float f_c, float att);
 void apply_impulse_response(struct sample_data *data, struct impulse_response_data *filter);
 void read_coeff_from_file(char *path, struct impulse_response_data *coeff);
 void write_coeff_to_file(char *path, struct impulse_response_data *data);
+void convert_wav_to_impulse_response(struct sample_data *wave, struct impulse_response_data *h);
+void apply_convolution_stereo(struct sample_data *x, struct sample_data *h);
 
 // utils.c
 int convolve(float *x, int len, float *h, int M, int n, float *y_n);

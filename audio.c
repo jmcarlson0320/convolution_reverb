@@ -155,8 +155,6 @@ void play_audio_samples(struct sample_data *data)
         data->index = 0;
 }
 
-// TODO
-// fix this filter code to work w/ stereo sample data
 void build_filter(struct impulse_response_data *filter, float f_c, float att)
 {
         filter->num_points = estimate_req_filter_len(0.05, att);
@@ -215,4 +213,16 @@ void free_filter_data(struct impulse_response_data *data)
                 return;
         free(data->data);
         data->data = NULL;
+}
+
+void convert_wav_to_impulse_response(struct sample_data *wave, struct impulse_response_data *h)
+{
+    h->data = malloc(sizeof(float) * wave->num_frames);
+    float sum = 0;
+    for (int i = 0; i < wave->num_frames; i++) {
+        h->data[i] = wave->frames[i].left;
+        sum += wave->frames[i].left;
+    }
+    h->scale_factor = 1.0f / sum;
+    h->num_points = wave->num_frames;
 }
