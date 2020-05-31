@@ -1,5 +1,7 @@
 #include "defs.h"
 
+#include <math.h>
+
 float lerp(float norm, float min, float max)
 {
     return (max - min) * norm + min;
@@ -33,4 +35,21 @@ int convolve(float *x, int len, float *h, int M, int n, float *y_n)
     *y_n = sum;
 
     return SUCCESS;
+}
+
+void print_real_part(FILE *out, fftw_complex *array, int n)
+{
+    for (int i = 0; i < n; i++) {
+        fprintf(out, "%6.12f\n", array[i].re);
+    }
+}
+
+void print_complex_array_mag(FILE *out, fftw_complex *array, int n)
+{
+    for (int i = 0; i < n; i++) {
+        float re = array[i].re;
+        float im = array[i].im;
+        float mag = sqrt(re * re + im * im);
+        fprintf(out, "%6.12f\n", mag);
+    }
 }

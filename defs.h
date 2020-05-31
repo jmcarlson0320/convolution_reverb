@@ -1,6 +1,8 @@
 #ifndef DEFS_H
 #define DEFS_H
 
+#include <fftw.h>
+
 #define SUCCESS 1
 #define ERROR 0
 #define NUM_CHANNELS 2
@@ -42,5 +44,7 @@ int convolve(float *x, int len, float *h, int M, int n, float *y_n);
 float lerp(float norm, float min, float max);
 float norm(float value, float min, float max);
 float map(float value, float srcMin, float srcMax, float destMin, float destMax);
+void print_real_part(FILE *out, fftw_complex *array, int n);
+void print_complex_array_mag(FILE *out, fftw_complex *array, int n);
 
 #endif // DEFS_H

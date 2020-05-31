@@ -1,6 +1,9 @@
 #include "unit_test.h"
 #include "defs.h"
 
+#include <stdio.h>
+#include <fftw.h>
+
 int playAudioStereo()
 {
     struct sample_data data;
@@ -49,47 +52,62 @@ int lowPassFilterWavefile()
     }
 
     return result;
-
 }
 
-int impulseTest()
+int fft()
 {
+    const int N = 65536;
+    fftw_complex in[N];
+    fftw_complex out[N];
+    fftw_plan fwd;
+    fftw_plan rvs;
     struct sample_data data;
-    struct sample_data impulse_response;
-    int result;
+    FILE *fp;
 
+    // create fft and inverse fft plans
+    fwd = fftw_create_plan(N, FFTW_FORWARD, FFTW_ESTIMATE);
+    rvs = fftw_create_plan(N, FFTW_BACKWARD, FFTW_ESTIMATE);
+
+    // get samples into the in array and print them
+    fp = fopen("samples.dat", "w");
     read_samples_from_wavfile("audio_files/piano2.wav", &data);
-    read_samples_from_wavfile("impulse_responses/five_columns_long.wav", &impulse_response);
+    for (int i = 0; i < N; i++) {
+        in[i].re = data.frames[i].left;
+        in[i].im = 0;
+    }
+    print_real_part(fp, in, N);
+    fclose(fp);
 
-    start_audio_systems();
-    play_audio_samples(&data);
-    play_audio_samples(&impulse_response);
-    terminate_audio_systems();
+    // perform fourier transform and print results
+    fftw_one(fwd, in, out);
+    for (int i = 0; i < N; i++) {
+        out[i].re /= 65536.0f;
+        out[i].im /= 65536.0f;
+    }
+    fp = fopen("dft.dat", "w");
+    print_complex_array_mag(fp, out, N);
+    fclose(fp);
 
-    return PASS;
-}
+    // perform inverse transform and print results
+    fftw_one(rvs, out, in);
+    fp = fopen("inverse.dat", "w");
+    print_real_part(fp, in, N);
+    fclose(fp);
 
-int convolveReverb()
-{
-    struct sample_data impulse_response;
-    int result;
+    // clean up
+    fftw_destroy_plan(fwd);
+    fftw_destroy_plan(rvs);
+    free_sample_data(&data);
 
-    read_samples_from_wavfile("impulse_responses/five_columns_long.wav", &impulse_response);
-
-    start_audio_systems();
-    play_audio_samples(&data);
-    play_audio_samples(&impulse_response);
-    terminate_audio_systems();
-
-    return PASS;
     return PASS;
 }
 
 TESTS = {
+    /*
     {"stereo audio test 1", playAudioStereo},
     {"wave file write test 1", writeSamplesToFile},
     {"low pass filter test", lowPassFilterWavefile},
-    {"load impulse_response tests", impulseTest},
-    {"reverb test", convolveReverb},
+    */
+    {"fft", fft},
     {0}
 };

@@ -1,0 +1,4 @@
+set autoscale
+set xrange[0:65535]
+plot "dft.dat" with impulses lw 3, "dft.dat" with points pt 7
+pause -1

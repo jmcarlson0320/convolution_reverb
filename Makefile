@@ -1,6 +1,6 @@
 CC = gcc
 CFLAGS = -g -Wall
-LIBS = -lm -lportaudio -lsndfile -lliquid
+LIBS = -lm -lportaudio -lsndfile -lliquid -lfftw
 EXE = reverb
 
 $(EXE): main.o audio.o utils.o
