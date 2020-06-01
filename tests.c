@@ -107,7 +107,10 @@ int fftConvolution()
 {
     Convolver c;
 
-    init_convolver(&c, NULL, 0, 0);
+    float array[1025];
+    init_convolver(&c, array, 1025, 1024);
+    destroy_convolver(&c);
+
     return PASS;
 }
 

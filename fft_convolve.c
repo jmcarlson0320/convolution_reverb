@@ -1,25 +1,55 @@
 #include "fft_convolve.h"
+#include <stdlib.h>
 #include <fftw.h>
 
-// TODO
-// allocate all the buffers
-// generate the ir_frequency data
 void init_convolver(Convolver *conv, float *ir, int len, int segment_size)
 {
-    conv->ir_time = NULL;
-    conv->ir_frequency = NULL;
     conv->ir_size = len;
-    conv->prev_overlap = NULL;
     conv->sample_block_size = segment_size;
     conv->dft_size = conv->sample_block_size + conv->ir_size - 1;
-    conv->input_buff = NULL;
-    conv->output_buff = NULL;
+
+    conv->ir_time = malloc(sizeof(fftw_complex) * conv->dft_size);
+    conv->ir_frequency = malloc(sizeof(fftw_complex) * conv->dft_size);
+    conv->prev_overlap = malloc(sizeof(float) * conv->ir_size - 1);
+    conv->input_buff = malloc(sizeof(fftw_complex) * conv->dft_size);
+    conv->output_buff = malloc(sizeof(fftw_complex) * conv->dft_size);
+
+    conv->fft = fftw_create_plan(conv->dft_size, FFTW_FORWARD, FFTW_ESTIMATE);
+    conv->ifft = fftw_create_plan(conv->dft_size, FFTW_BACKWARD, FFTW_ESTIMATE);
+
+    // copy ir to ir_buffer and pad w/ zeros
+    for (int i = 0; i < conv->dft_size; i++) {
+        if (i < conv->ir_size) {
+            conv->ir_time[i].re = ir[i];
+            conv->ir_time[i].im = 0.0f;
+        } else {
+            conv->ir_time[i].re = 0.0f;
+            conv->ir_time[i].im = 0.0f;
+        }
+    }
+
+    // clear the overlap buffer
+    for (int i = 0; i < conv->ir_size - 1; i++) {
+        conv->prev_overlap[i] = 0.0f;
+    }
+
+    fftw_one(conv->fft, conv->ir_time, conv->ir_frequency);
 }
 
-// TODO
-// free all the buffers, and set to NULL
 void destroy_convolver(Convolver *conv)
 {
+    free(conv->ir_time);
+    free(conv->ir_frequency);
+    free(conv->prev_overlap);
+    free(conv->input_buff);
+    free(conv->output_buff);
+    conv->ir_time = NULL;
+    conv->ir_frequency = NULL;
+    conv->prev_overlap = NULL;
+    conv->input_buff = NULL;
+    conv->output_buff = NULL;
+    fftw_destroy_plan(conv->fft);
+    fftw_destroy_plan(conv->ifft);
 }
 
 // TODO

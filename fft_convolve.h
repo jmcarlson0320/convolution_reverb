@@ -4,14 +4,16 @@
 #include <fftw.h>
 
 typedef struct convolver {
-    float *ir_time;
+    fftw_complex *ir_time;
     fftw_complex *ir_frequency;
+    int ir_size;
     float *prev_overlap;
     int sample_block_size;
-    int ir_size;
     int dft_size;
     fftw_complex *input_buff;
     fftw_complex *output_buff;
+    fftw_plan fft;
+    fftw_plan ifft;
 } Convolver;
 
 void init_convolver(Convolver *conv, float *ir, int len, int segment_size);
