@@ -105,7 +105,10 @@ int fft()
 
 int fftConvolution()
 {
+    Convolver c;
 
+    init_convolver(&c, NULL, 0, 0);
+    return PASS;
 }
 
 TESTS = {
