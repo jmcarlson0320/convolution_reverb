@@ -7,6 +7,7 @@ typedef struct convolver {
     fftw_complex *ir_time;
     fftw_complex *ir_frequency;
     int ir_size;
+    float ir_scale;
     float *prev_overlap;
     int sample_block_size;
     int dft_size;

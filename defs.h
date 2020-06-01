@@ -44,7 +44,9 @@ int convolve(float *x, int len, float *h, int M, int n, float *y_n);
 float lerp(float norm, float min, float max);
 float norm(float value, float min, float max);
 float map(float value, float srcMin, float srcMax, float destMin, float destMax);
+void print_float_array(FILE *out, float *array, int n);
 void print_real_part(FILE *out, fftw_complex *array, int n);
 void print_complex_array_mag(FILE *out, fftw_complex *array, int n);
+fftw_complex complex_multiply(fftw_complex x, fftw_complex y);
 
 #endif // DEFS_H

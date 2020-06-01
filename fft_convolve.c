@@ -1,7 +1,14 @@
 #include "fft_convolve.h"
+
 #include <stdlib.h>
+#include <math.h>
+
 #include <fftw.h>
 
+#include "defs.h"
+
+// TODO
+// clear buffers
 void init_convolver(Convolver *conv, float *ir, int len, int segment_size)
 {
     conv->ir_size = len;
@@ -34,6 +41,11 @@ void init_convolver(Convolver *conv, float *ir, int len, int segment_size)
     }
 
     fftw_one(conv->fft, conv->ir_time, conv->ir_frequency);
+
+    conv->ir_scale = 0.0f;
+    for (int i = 0; i < conv->dft_size; i++) {
+        conv->ir_scale += conv->ir_time[i].re;
+    }
 }
 
 void destroy_convolver(Convolver *conv)
@@ -71,6 +83,43 @@ void fft_convolve(Convolver *conv, float *input, float *output)
      *  6. copy the overlap to prev_overlap
      *
      * */
+
+    // step 1
+    fftw_complex tmp[conv->dft_size];
+    for (int i = 0; i < conv->dft_size; i++) {
+        tmp[i].re = 0.0f;
+        tmp[i].im = 0.0f;
+    }
+
+    for (int i = 0; i < conv->dft_size; i++) {
+        if (i < conv->sample_block_size) {
+            conv->input_buff[i].re = input[i];
+            conv->input_buff[i].im = 0.0f;
+        } else {
+            conv->input_buff[i].re = 0.0f;
+            conv->input_buff[i].im = 0.0f;
+        }
+    }
+
+    fftw_one(conv->fft, conv->input_buff, tmp);
+
+    // step 2
+    for (int i = 0; i < conv->dft_size; i++) {
+        tmp[i] = complex_multiply(tmp[i], conv->ir_frequency[i]);
+    }
+
+    // step 3
+    fftw_one(conv->ifft, tmp, conv->output_buff);
+
+    // step 4, 5, 6
+    for (int i = 0; i < conv->dft_size; i++) {
+        if (i < conv->ir_size - 1)
+            output[i] = conv->output_buff[i].re / (float) conv->dft_size + conv->prev_overlap[i];
+        else if (i < conv->sample_block_size)
+            output[i] = conv->output_buff[i].re / (float) conv->dft_size;
+        else
+            conv->prev_overlap[i] = conv->output_buff[i].re / (float) conv->dft_size;
+    }
 }
 
 /*

@@ -1,0 +1,4 @@
+set autoscale
+set xrange[0:84]
+plot "convolved_samples.dat" with impulses lw 3, "convolved_samples.dat" with points pt 7
+pause -1

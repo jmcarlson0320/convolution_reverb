@@ -37,6 +37,13 @@ int convolve(float *x, int len, float *h, int M, int n, float *y_n)
     return SUCCESS;
 }
 
+void print_float_array(FILE *out, float *array, int n)
+{
+    for (int i = 0; i < n; i++) {
+        fprintf(out, "%6.12f\n", array[i]);
+    }
+}
+
 void print_real_part(FILE *out, fftw_complex *array, int n)
 {
     for (int i = 0; i < n; i++) {
@@ -52,4 +59,14 @@ void print_complex_array_mag(FILE *out, fftw_complex *array, int n)
         float mag = sqrt(re * re + im * im);
         fprintf(out, "%6.12f\n", mag);
     }
+}
+
+fftw_complex complex_multiply(fftw_complex x, fftw_complex y)
+{
+    fftw_complex result;
+
+    result.re = x.re * y.re - x.im * y.im;
+    result.im = x.re * y.im + x.im * y.re;
+
+    return result;
 }

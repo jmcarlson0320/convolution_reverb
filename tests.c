@@ -106,10 +106,84 @@ int fft()
 int fftConvolution()
 {
     Convolver c;
+    struct sample_data data;
+    struct impulse_response_data lpf;
+    float *samples;
+    float *output;
 
-    float array[1025];
-    init_convolver(&c, array, 1025, 1024);
+    // setup
+    samples = malloc(85 * sizeof(float));
+    output = malloc(85 * sizeof(float));
+
+    read_samples_from_wavfile("audio_files/piano2.wav", &data);
+
+    // copy and print sample data
+    for (int i = 0; i < 85; i++) {
+        samples[i] = data.frames[i].left;
+        output[i] = 0.0f;
+    }
+    FILE *fp = fopen("sample_data.dat", "w");
+    print_float_array(fp, samples, 85);
+    fclose(fp);
+    fp = NULL;
+
+    // build filter and print data
+    build_filter(&lpf, 0.0113f, 40.0f);
+    fp = fopen("filter_data.dat", "w");
+    print_float_array(fp, lpf.data, lpf.num_points);
+    fclose(fp);
+    fp = NULL;
+
+    // convolve
+    init_convolver(&c, lpf.data, lpf.num_points, 128 - lpf.num_points + 1);
+    fft_convolve(&c, samples, output);
+
+    // print output data
+    fp = fopen("convolved_samples.dat", "w");
+    print_float_array(fp, output, 85);
+    fclose(fp);
+    fp = NULL;
+
+    // clean up
     destroy_convolver(&c);
+
+    free(lpf.data);
+
+    free(samples);
+    free(output);
+
+    free_sample_data(&data);
+
+    return PASS;
+}
+
+int directConvolution()
+{
+    struct sample_data data;
+    struct impulse_response_data lpf;
+
+    read_samples_from_wavfile("audio_files/piano2.wav", &data);
+
+    // build filter and print data
+    build_filter(&lpf, 0.0113f, 40.0f);
+
+    // convolve
+    apply_impulse_response(&data, &lpf);
+
+    float output[85];
+    for (int i = 0; i < 85; i++) {
+        output[i] = data.frames[i].left;
+    }
+
+    // print output data
+    FILE *fp = fopen("convolved_samples.dat", "w");
+    print_float_array(fp, output, 85);
+    fclose(fp);
+    fp = NULL;
+
+    // clean up
+    free(lpf.data);
+    free_sample_data(&data);
 
     return PASS;
 }
@@ -121,6 +195,6 @@ TESTS = {
     {"low pass filter test", lowPassFilterWavefile},
     {"fft", fft},
     */
-    {"convolution testing", fftConvolution},
+    {"convolution testing", directConvolution},
     {0}
 };

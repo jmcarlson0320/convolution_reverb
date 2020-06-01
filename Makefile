@@ -12,7 +12,7 @@ tests: tests.o audio.o utils.o fft_convolve.o
 tests.o: unit_test.h defs.h
 audio.o: defs.h
 utils.o: defs.h
-fft_convolve.o: fft_convolve.h
+fft_convolve.o: fft_convolve.h defs.h
 
 clean:
 	rm *.o $(EXE) run_tests
