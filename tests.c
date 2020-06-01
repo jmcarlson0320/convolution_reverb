@@ -1,5 +1,6 @@
 #include "unit_test.h"
 #include "defs.h"
+#include "fft_convolve.h"
 
 #include <stdio.h>
 #include <fftw.h>
@@ -102,12 +103,18 @@ int fft()
     return PASS;
 }
 
+int fftConvolution()
+{
+
+}
+
 TESTS = {
     /*
     {"stereo audio test 1", playAudioStereo},
     {"wave file write test 1", writeSamplesToFile},
     {"low pass filter test", lowPassFilterWavefile},
-    */
     {"fft", fft},
+    */
+    {"convolution testing", fftConvolution},
     {0}
 };

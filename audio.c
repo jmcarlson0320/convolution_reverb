@@ -6,9 +6,6 @@
 
 #define STACK_SIZE 128
 
-static void *stack[STACK_SIZE] = {0};
-static int stack_ptr = 0;
-
 // TODO
 // functions:
 //  - fft
