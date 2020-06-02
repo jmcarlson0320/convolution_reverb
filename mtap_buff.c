@@ -1,5 +1,7 @@
 #include "mtap_buff.h"
 
+#include <stddef.h>
+
 void mtap_init(Mtap_buff *b, float *array, int size)
 {
     b->buffer = array;
@@ -11,7 +13,9 @@ void mtap_update(Mtap_buff *b, float src, float *dest)
 {
     int i = b->index;
 
-    *dest = b->buffer[i];
+    if (dest != NULL)
+        *dest = b->buffer[i];
+
     b->buffer[i] = src;
 
     b->index++;

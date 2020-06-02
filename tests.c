@@ -291,15 +291,21 @@ int long_convolution()
 
     Convolver *conv_engines;
 
+    struct sample_data piano;
+    float *piano_samples;
+    int num_blocks;
+
+    Mtap_buff sample_buffer;
+
     read_samples_from_wavfile("impulse_responses/nice_drum_room.wav", &ir);
 
     // calculate how many slices to chop IR into
-    num_conv = ir.num_frames / (IR_SIZE);
-    if ((ir.num_frames % (IR_SIZE)) != 0)
+    num_conv = ir.num_frames / IR_SIZE;
+    if ((ir.num_frames % IR_SIZE) != 0)
         num_conv++;
 
     // this array needs to be a length that is a multiple of IR_SIZE
-    ir_samples = malloc(num_conv * (IR_SIZE) * sizeof(float));
+    ir_samples = malloc(num_conv * IR_SIZE * sizeof(float));
 
     // copy interleved ir samples to array, and pad with zeros
     for (int i = 0; i < num_conv * IR_SIZE; i++) {
@@ -312,10 +318,46 @@ int long_convolution()
     // create convolution engines, each engine gets a slice of the IR
     conv_engines = malloc(num_conv * sizeof(Convolver));
     for (int i = 0; i < num_conv; i++) {
-        init_convolver(&conv_engines[i], ir_samples + i * (IR_SIZE), IR_SIZE, SEG_SIZE);
+        init_convolver(&conv_engines[i], ir_samples + i * IR_SIZE, IR_SIZE, SEG_SIZE);
+    }
+
+    read_samples_from_wavfile("audio_files/piano2.wav", &piano);
+
+    // calculate number of sample blocks
+    num_blocks = piano.num_frames / SEG_SIZE;
+    if ((piano.num_frames % SEG_SIZE) != 0)
+        num_blocks++;
+
+    piano_samples = malloc(num_blocks * SEG_SIZE * sizeof(float));
+
+    // copy to array and pad w/zeros
+    for (int i = 0; i < num_blocks * SEG_SIZE; i++) {
+        if (i < piano.num_frames)
+            piano_samples[i] = piano.frames[i].left;
+        else
+            piano_samples[i] = 0.0f;
     }
 
     // convolution algorithm using multi-tap buffer goes here
+
+    // allocate the special buffer
+    float *buffer;
+    buffer = malloc(num_blocks * SEG_SIZE * sizeof(float));
+    for (int i = 0; i < num_blocks * SEG_SIZE; i++)
+        buffer[i] = 0.0f;
+    mtap_init(&sample_buffer, buffer, num_blocks * SEG_SIZE);
+
+    int cur_block = 0;
+    while (cur_block < num_blocks) {
+        // 1. write current input block to buffer
+        for (int i = 0; i < SEG_SIZE; i++) {
+            mtap_update(&sample_buffer, piano_samples[i], NULL);
+        }
+        // 2. run all convolution engines
+        // 3. sum results segments
+        // 4. write sum to current output block
+        cur_block++;
+    }
 
     // clean up
     for (int i = 0; i < num_conv; i++) {
@@ -323,7 +365,10 @@ int long_convolution()
     }
     free(conv_engines);
     free_sample_data(&ir);
+    free_sample_data(&piano);
     free(ir_samples);
+    free(piano_samples);
+    free(buffer);
 
     return PASS;
 }

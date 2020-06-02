@@ -2,4 +2,4 @@ todo.txt
 *.swp
 *.o
 reverb
-run_tests
+tests
