@@ -48,6 +48,7 @@ void init_convolver(Convolver *conv, float *ir, int len, int segment_size)
     for (int i = 0; i < conv->dft_size; i++) {
         conv->ir_scale += conv->ir_time[i].re;
     }
+    conv->ir_scale = 1.0f / conv->ir_scale;
 }
 
 void destroy_convolver(Convolver *conv)
@@ -122,12 +123,12 @@ void fft_convolve(Convolver *conv, float *input, float *output)
     for (int i = 0; i < conv->dft_size; i++) {
         // combine output with existing overlap
         if (i < conv->ir_size - 1)
-            output[i] = conv->output_buff[i].re / (float) conv->dft_size + conv->prev_overlap[i];
+            output[i] = conv->output_buff[i].re * conv->ir_scale / (float) conv->dft_size + conv->prev_overlap[i];
         // copy rest of output
         else if (i < conv->sample_block_size)
-            output[i] = conv->output_buff[i].re / (float) conv->dft_size;
+            output[i] = conv->output_buff[i].re * conv->ir_scale / (float) conv->dft_size;
         // save new overlap for next time
-        else // TODO this is WRONG!!!!!
-            conv->prev_overlap[i - conv->sample_block_size] = conv->output_buff[i].re / (float) conv->dft_size;
+        else
+            conv->prev_overlap[i - conv->sample_block_size] = conv->output_buff[i].re * conv->ir_scale / (float) conv->dft_size;
     }
 }

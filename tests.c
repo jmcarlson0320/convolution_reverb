@@ -197,6 +197,54 @@ int directConvolution()
 
 int segmentedConvolution()
 {
+    Convolver c_left;
+    Convolver c_right;
+    struct sample_data data;
+    struct impulse_response_data lpf;
+    int num_segments;
+    float in_left[85];
+    float in_right[85];
+    float out_left[85];
+    float out_right[85];
+
+    read_samples_from_wavfile("audio_files/piano2.wav", &data);
+    build_filter(&lpf, 0.0113f, 40.0f);
+    init_convolver(&c_left, lpf.data, lpf.num_points, 128 - lpf.num_points + 1);
+    init_convolver(&c_right, lpf.data, lpf.num_points, 128 - lpf.num_points + 1);
+
+    // how many segments
+    num_segments = data.num_frames / 85;
+
+    // loop through all segments
+    for (int cur_seg = 0; cur_seg < num_segments; cur_seg++) {
+        // get next chunk of samples
+        for (int i = 0; i < 85; i++) {
+            in_left[i] = data.frames[i + cur_seg * 85].left;
+            in_right[i] = data.frames[i + cur_seg * 85].right;
+        }
+
+        // perform convolution
+        fft_convolve(&c_left, in_left, out_left);
+        fft_convolve(&c_right, in_right, out_right);
+
+        // write samples back
+        for (int i = 0; i < 85; i++) {
+            data.frames[i + cur_seg * 85].left = out_left[i];
+            data.frames[i + cur_seg * 85].right = out_right[i];
+        }
+    }
+
+    // play the filtered samples
+    start_audio_systems();
+    play_audio_samples(&data);
+    terminate_audio_systems();
+
+    // clean up
+    destroy_convolver(&c_left);
+    destroy_convolver(&c_right);
+    free_sample_data(&data);
+    free(lpf.data);
+
     return PASS;
 }
 
@@ -204,9 +252,9 @@ TESTS = {
     /*
     {"stereo audio test 1", playAudioStereo},
     {"wave file write test 1", writeSamplesToFile},
-    {"low pass filter test", lowPassFilterWavefile},
     {"fft", fft},
     */
+    {"low pass filter test", lowPassFilterWavefile},
     {"convolution testing", segmentedConvolution},
     {0}
 };
