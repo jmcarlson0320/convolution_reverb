@@ -1,6 +1,7 @@
 #include "unit_test.h"
 #include "defs.h"
 #include "fft_convolve.h"
+#include "mtap_buff.h"
 
 #include <stdio.h>
 #include <fftw.h>
@@ -208,11 +209,15 @@ int segmentedConvolution()
     float out_right[85];
 
     read_samples_from_wavfile("audio_files/piano2.wav", &data);
+
+    start_audio_systems();
+    play_audio_samples(&data);
+    terminate_audio_systems();
+
     build_filter(&lpf, 0.0113f, 40.0f);
     init_convolver(&c_left, lpf.data, lpf.num_points, 128 - lpf.num_points + 1);
     init_convolver(&c_right, lpf.data, lpf.num_points, 128 - lpf.num_points + 1);
 
-    // how many segments
     num_segments = data.num_frames / 85;
 
     // loop through all segments
@@ -248,13 +253,90 @@ int segmentedConvolution()
     return PASS;
 }
 
+int multi_tap_buff_tests()
+{
+    printf("\n");
+    const int SIZE = 32;
+    float *array = malloc(SIZE * sizeof(float));
+    Mtap_buff input_buffer;
+    float out = 0.0f;
+
+    mtap_init(&input_buffer, array, SIZE);
+
+
+    for (int i = 0; i < 250; i++) {
+        mtap_update(&input_buffer, (float) i, &out);
+    }
+
+    print_float_array(stdout, input_buffer.buffer, input_buffer.size);
+
+    free(array);
+
+    return PASS;
+}
+
+int long_convolution()
+{
+    printf("\n");
+
+    // segment size is size of sample chucks, power of 2
+    // IR_SIZE size must be SEG_SIZE + 1 so that
+    // dft_size = SEG_SIZE + IR_SIZE - 1 is a power of 2
+    const int SEG_SIZE = 4096;
+    const int IR_SIZE = SEG_SIZE + 1;
+    const int DFT_SIZE = SEG_SIZE + IR_SIZE - 1;
+    int num_conv;
+    struct sample_data ir;
+    float *ir_samples;
+
+    Convolver *conv_engines;
+
+    read_samples_from_wavfile("impulse_responses/nice_drum_room.wav", &ir);
+
+    // calculate how many slices to chop IR into
+    num_conv = ir.num_frames / (IR_SIZE);
+    if ((ir.num_frames % (IR_SIZE)) != 0)
+        num_conv++;
+
+    // this array needs to be a length that is a multiple of IR_SIZE
+    ir_samples = malloc(num_conv * (IR_SIZE) * sizeof(float));
+
+    // copy interleved ir samples to array, and pad with zeros
+    for (int i = 0; i < num_conv * IR_SIZE; i++) {
+        if (i < ir.num_frames)
+            ir_samples[i] = ir.frames[i].left;
+        else
+            ir_samples[i] = 0.0f;
+    }
+
+    // create convolution engines, each engine gets a slice of the IR
+    conv_engines = malloc(num_conv * sizeof(Convolver));
+    for (int i = 0; i < num_conv; i++) {
+        init_convolver(&conv_engines[i], ir_samples + i * (IR_SIZE), IR_SIZE, SEG_SIZE);
+    }
+
+    // convolution algorithm using multi-tap buffer goes here
+
+    // clean up
+    for (int i = 0; i < num_conv; i++) {
+        destroy_convolver(&conv_engines[i]);
+    }
+    free(conv_engines);
+    free_sample_data(&ir);
+    free(ir_samples);
+
+    return PASS;
+}
+
 TESTS = {
     /*
     {"stereo audio test 1", playAudioStereo},
     {"wave file write test 1", writeSamplesToFile},
     {"fft", fft},
-    */
     {"low pass filter test", lowPassFilterWavefile},
     {"convolution testing", segmentedConvolution},
+    {"multitap buffer testing", multi_tap_buff_tests},
+    */
+    {"long convolution", long_convolution},
     {0}
 };

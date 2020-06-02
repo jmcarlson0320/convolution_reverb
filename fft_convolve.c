@@ -69,6 +69,8 @@ void destroy_convolver(Convolver *conv)
 
 // TODO
 // calculate 1/N inside init function
+// decide how to handle outputing only the tail/overlap
+// can be done by inputting an empty array...
 void fft_convolve(Convolver *conv, float *input, float *output)
 {
     /*
