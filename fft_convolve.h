@@ -6,13 +6,13 @@
 typedef struct convolver {
     fftw_complex *ir_time;
     fftw_complex *ir_frequency;
-    int ir_size;
-    float ir_scale;
-    float *prev_overlap;
-    int sample_block_size;
-    int dft_size;
     fftw_complex *input_buff;
     fftw_complex *output_buff;
+    float *prev_overlap;
+    int sample_block_size;
+    int ir_size;
+    float ir_scale;
+    int dft_size;
     fftw_plan fft;
     fftw_plan ifft;
 } Convolver;

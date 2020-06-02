@@ -40,8 +40,10 @@ void init_convolver(Convolver *conv, float *ir, int len, int segment_size)
         conv->prev_overlap[i] = 0.0f;
     }
 
+    // generate frequency data of impulse response
     fftw_one(conv->fft, conv->ir_time, conv->ir_frequency);
 
+    // calculate a scaling factor, not sure if this is legit
     conv->ir_scale = 0.0f;
     for (int i = 0; i < conv->dft_size; i++) {
         conv->ir_scale += conv->ir_time[i].re;
@@ -65,7 +67,7 @@ void destroy_convolver(Convolver *conv)
 }
 
 // TODO
-// implement
+// calculate 1/N inside init function
 void fft_convolve(Convolver *conv, float *input, float *output)
 {
     /*
@@ -85,12 +87,14 @@ void fft_convolve(Convolver *conv, float *input, float *output)
      * */
 
     // step 1
+    // init a temporary array
     fftw_complex tmp[conv->dft_size];
     for (int i = 0; i < conv->dft_size; i++) {
         tmp[i].re = 0.0f;
         tmp[i].im = 0.0f;
     }
 
+    // copy input and pad
     for (int i = 0; i < conv->dft_size; i++) {
         if (i < conv->sample_block_size) {
             conv->input_buff[i].re = input[i];
@@ -101,80 +105,29 @@ void fft_convolve(Convolver *conv, float *input, float *output)
         }
     }
 
+    // transform input to frequency domain
     fftw_one(conv->fft, conv->input_buff, tmp);
 
     // step 2
+    // perform convolution by multiplication in the frequency domain
     for (int i = 0; i < conv->dft_size; i++) {
         tmp[i] = complex_multiply(tmp[i], conv->ir_frequency[i]);
     }
 
     // step 3
+    // inverse transform back to time domain
     fftw_one(conv->ifft, tmp, conv->output_buff);
 
     // step 4, 5, 6
     for (int i = 0; i < conv->dft_size; i++) {
+        // combine output with existing overlap
         if (i < conv->ir_size - 1)
             output[i] = conv->output_buff[i].re / (float) conv->dft_size + conv->prev_overlap[i];
+        // copy rest of output
         else if (i < conv->sample_block_size)
             output[i] = conv->output_buff[i].re / (float) conv->dft_size;
-        else
-            conv->prev_overlap[i] = conv->output_buff[i].re / (float) conv->dft_size;
+        // save new overlap for next time
+        else // TODO this is WRONG!!!!!
+            conv->prev_overlap[i - conv->sample_block_size] = conv->output_buff[i].re / (float) conv->dft_size;
     }
 }
-
-/*
-void fft_convolve(float *in, float *out, int len)
-{
-    fftw_complex input_samples[l + m - 1];
-    fftw_complex input_spectrum[l + m - 1];
-    fftw_complex impulse_response[l + m - 1];
-    fftw_complex impulse_response_spectrum[l + m - 1];
-    fftw_complex output_spectrum[l + m - 1];
-    fftw_complex output_samples[l + m - 1];
-
-    fftw_plan fft = fftw_create_plan(l + m - 1, FFTW_FORWARD, FFTW_ESTIMATE);
-    fftw_plan ifft = fftw_create_plan(l + m - 1, FFTW_BACKWARD, FFTW_ESTIMATE);
-
-    // load samples for processing and pad w/ zeros
-    for (int i = 0; i < l + m - 1; i++) {
-        input_samples[i].im = 0.0f;
-        if (i < l)
-            input_samples[i].re = in[i];
-        else
-            input_samples[i].re = 0.0f;
-    }
-
-    // convert samples to freq domain
-    fftw_one(fft, input_samples, input_spectrum);
-
-    // load impulse response and pad w/ zeros
-    for (int i = 0; i < l + m - 1; i++) {
-        impulse_response[i].im = 0.0f;
-        if (i < m)
-            impulse_response[i].re = ir[i];
-        else {
-            impulse_response[i].re = 0.0f;
-        }
-    }
-
-    // convert ir to freq domain
-    fftw_one(fft, impulse_response, impulse_response_spectrum);
-
-    // perform complex multiplication
-    for (int i = 0; i < l + m - 1; i++) {
-        output_spectrum[i].re = input_spectrum[i].re * impulse_response_spectrum[i].re
-                              - input_spectrum[i].im * impulse_response_spectrum[i].im;
-        output_spectrum[i].im = input_spectrum[i].re * impulse_response_spectrum[i].im
-                              + input_spectrum[i].im * impulse_response_spectrum[i].re;
-    }
-
-    // convert back to time domain
-    fftw_one(ifft, output_spectrum, output_samples);
-
-    // write real part to output
-    float scale_factor = 1.0f / (float) (l + m - 1);
-    for (int i = 0; i < l + m - 1; i++) {
-        out[i] = output_samples[i].re  * scale_factor;
-    }
-}
-*/
