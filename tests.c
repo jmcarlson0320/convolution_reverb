@@ -299,6 +299,9 @@ int long_convolution()
     Mtap_buff sample_buffer;
 
     read_samples_from_wavfile("impulse_responses/nice_drum_room.wav", &ir);
+    start_audio_systems();
+    play_audio_samples(&ir);
+    terminate_audio_systems();
 
     // calculate how many slices to chop IR into
     num_conv = ir.num_frames / IR_SIZE;
@@ -322,7 +325,10 @@ int long_convolution()
         init_convolver(&conv_engines[i], ir_samples + i * IR_SIZE, IR_SIZE, SEG_SIZE);
     }
 
-    read_samples_from_wavfile("audio_files/piano2.wav", &piano);
+    read_samples_from_wavfile("audio_files/dog.wav", &piano);
+    start_audio_systems();
+    play_audio_samples(&piano);
+    terminate_audio_systems();
 
     // calculate number of sample blocks
     num_blocks = piano.num_frames / SEG_SIZE;
@@ -368,7 +374,7 @@ int long_convolution()
             float tmp_in[SEG_SIZE];
             float tmp_out[SEG_SIZE];
             for (int j = 0; j < SEG_SIZE; j++) {
-                mtap_get_at(&sample_buffer, i * SEG_SIZE - j - 1, tmp_in + j);
+                mtap_get_at(&sample_buffer, (i + 1) * SEG_SIZE - (j - 1), tmp_in + j);
             }
 
             fft_convolve(&conv_engines[i], tmp_in, tmp_out);
@@ -379,7 +385,7 @@ int long_convolution()
         }
         // 4. write sum to current output block
         for (int i = 0; i < SEG_SIZE; i++) {
-            output_samples[cur_block * SEG_SIZE + i] = accumulator[i];
+            output_samples[cur_block * SEG_SIZE + i] = accumulator[i] * 0.25f;
         }
         cur_block++;
     }
@@ -392,7 +398,7 @@ int long_convolution()
     }
     convolved_piano.num_frames = num_blocks * SEG_SIZE;
     convolved_piano.index = 0;
-    convolved_piano.sample_rate = 44100;
+    convolved_piano.sample_rate = 48000;
 
 
     start_audio_systems();
