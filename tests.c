@@ -353,7 +353,7 @@ int long_convolution()
     while (cur_block < num_blocks) {
         // 1. write current input block to buffer
         for (int i = 0; i < SEG_SIZE; i++) {
-            mtap_update(&sample_buffer, piano_samples[i], NULL);
+            mtap_update(&sample_buffer, piano_samples[i + cur_block * SEG_SIZE], NULL);
         }
         float accumulator[SEG_SIZE];
         for (int i = 0; i < SEG_SIZE; i++) {
@@ -368,13 +368,13 @@ int long_convolution()
             float tmp_in[SEG_SIZE];
             float tmp_out[SEG_SIZE];
             for (int j = 0; j < SEG_SIZE; j++) {
-                mtap_get_at(&sample_buffer, (i + 1) * SEG_SIZE + j - 1, tmp_in + i);
+                mtap_get_at(&sample_buffer, (i + 1) * SEG_SIZE + j - 1, tmp_in + j);
             }
 
             fft_convolve(&conv_engines[i], tmp_in, tmp_out);
             // 3. sum results of the convolutions
             for (int j = 0; j < SEG_SIZE; j++) {
-                accumulator[i] += tmp_out[i];
+                accumulator[j] += tmp_out[j];
             }
         }
         // 4. write sum to current output block
@@ -394,7 +394,10 @@ int long_convolution()
     convolved_piano.index = 0;
     convolved_piano.sample_rate = 44100;
 
-    write_samples_to_wavfile("audio_files/long_conv_piano.wav", &convolved_piano);
+
+    start_audio_systems();
+    play_audio_samples(&convolved_piano);
+    terminate_audio_systems();
 
     // clean up
     for (int i = 0; i < num_conv; i++) {
