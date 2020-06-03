@@ -368,7 +368,7 @@ int long_convolution()
             float tmp_in[SEG_SIZE];
             float tmp_out[SEG_SIZE];
             for (int j = 0; j < SEG_SIZE; j++) {
-                mtap_get_at(&sample_buffer, (i + 1) * SEG_SIZE + j - 1, tmp_in + j);
+                mtap_get_at(&sample_buffer, i * SEG_SIZE - j - 1, tmp_in + j);
             }
 
             fft_convolve(&conv_engines[i], tmp_in, tmp_out);
@@ -398,6 +398,8 @@ int long_convolution()
     start_audio_systems();
     play_audio_samples(&convolved_piano);
     terminate_audio_systems();
+
+    write_samples_to_wavfile("audio_files/long_conv_piano.wav", &convolved_piano);
 
     // clean up
     for (int i = 0; i < num_conv; i++) {
