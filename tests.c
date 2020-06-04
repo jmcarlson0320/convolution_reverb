@@ -208,7 +208,7 @@ int segmentedConvolution()
     float out_left[85];
     float out_right[85];
 
-    read_samples_from_wavfile("audio_files/piano2.wav", &data);
+    read_samples_from_wavfile("audio_files/dog.wav", &data);
 
     start_audio_systems();
     play_audio_samples(&data);
@@ -285,20 +285,24 @@ int long_convolution()
     const int SEG_SIZE = 4096;
     const int IR_SIZE = SEG_SIZE + 1;
     const int DFT_SIZE = SEG_SIZE + IR_SIZE - 1;
-    int num_conv;
+
     struct sample_data ir;
     float *ir_samples;
 
-    Convolver *conv_engines;
-
     struct sample_data piano;
     float *piano_samples;
+
+    Convolver *conv_engines;
+    int num_conv;
+
     float *output_samples;
+
     int num_blocks;
 
     Mtap_buff sample_buffer;
 
-    read_samples_from_wavfile("impulse_responses/nice_drum_room.wav", &ir);
+    read_samples_from_wavfile("impulse_responses/five_columns_long.wav", &ir);
+
     start_audio_systems();
     play_audio_samples(&ir);
     terminate_audio_systems();
@@ -326,9 +330,6 @@ int long_convolution()
     }
 
     read_samples_from_wavfile("audio_files/dog.wav", &piano);
-    start_audio_systems();
-    play_audio_samples(&piano);
-    terminate_audio_systems();
 
     // calculate number of sample blocks
     num_blocks = piano.num_frames / SEG_SIZE;
@@ -350,10 +351,16 @@ int long_convolution()
 
     // allocate the special buffer
     float *buffer;
-    buffer = malloc(num_blocks * SEG_SIZE * sizeof(float));
-    for (int i = 0; i < num_blocks * SEG_SIZE; i++)
+    buffer = malloc(num_conv * SEG_SIZE * sizeof(float));
+    for (int i = 0; i < num_conv * SEG_SIZE; i++)
         buffer[i] = 0.0f;
-    mtap_init(&sample_buffer, buffer, num_blocks * SEG_SIZE);
+    mtap_init(&sample_buffer, buffer, num_conv * SEG_SIZE);
+
+    // accumulator
+    float accumulator[SEG_SIZE];
+    for (int i = 0; i < SEG_SIZE; i++) {
+        accumulator[i] = 0.0f;
+    }
 
     int cur_block = 0;
     while (cur_block < num_blocks) {
@@ -361,23 +368,19 @@ int long_convolution()
         for (int i = 0; i < SEG_SIZE; i++) {
             mtap_update(&sample_buffer, piano_samples[i + cur_block * SEG_SIZE], NULL);
         }
-        float accumulator[SEG_SIZE];
+
+        // clear accumulator
         for (int i = 0; i < SEG_SIZE; i++) {
             accumulator[i] = 0.0f;
         }
+
         // 2. run all convolution engines
         for (int i = 0; i < num_conv; i++) {
-            // copy input block from mtap buffer into temp array
-            // Need a better way to deal with the wrap-around issue:
-            // if i just give a pointer into the mtap array, when the convolver
-            // iterates over the array, it will not know it should wrap around
-            float tmp_in[SEG_SIZE];
+            int delay = (i + 1) * SEG_SIZE - 1;
+            int tap = mtap_get_index(&sample_buffer, (i + 1) * SEG_SIZE - 1);
             float tmp_out[SEG_SIZE];
-            for (int j = 0; j < SEG_SIZE; j++) {
-                mtap_get_at(&sample_buffer, (i + 1) * SEG_SIZE - (j - 1), tmp_in + j);
-            }
+            fft_convolve(&conv_engines[i], sample_buffer.buffer + tap, tmp_out);
 
-            fft_convolve(&conv_engines[i], tmp_in, tmp_out);
             // 3. sum results of the convolutions
             for (int j = 0; j < SEG_SIZE; j++) {
                 accumulator[j] += tmp_out[j];
@@ -385,7 +388,7 @@ int long_convolution()
         }
         // 4. write sum to current output block
         for (int i = 0; i < SEG_SIZE; i++) {
-            output_samples[cur_block * SEG_SIZE + i] = accumulator[i] * 0.25f;
+            output_samples[cur_block * SEG_SIZE + i] = accumulator[i] / num_conv * 0.5f;
         }
         cur_block++;
     }
