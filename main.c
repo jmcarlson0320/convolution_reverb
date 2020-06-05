@@ -139,14 +139,15 @@ int main(int argc, char *argv[])
     }
 
     // apply convolution reverb
-    //reverberate(&ir_data, &input_data, &output_data);
+    reverberate(&ir_data, &input_data, &output_data);
+
 
     // play result or write to file
     if (options[OUTPUT_FILE_SPECIFIED]) {
-        write_samples_to_wavfile(output_file, &input_data);
+        write_samples_to_wavfile(output_file, &output_data);
     } else {
         start_audio_systems();
-        play_audio_samples(&input_data);
+        play_audio_samples(&output_data);
         terminate_audio_systems();
     }
 
