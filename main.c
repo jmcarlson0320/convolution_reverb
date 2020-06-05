@@ -55,6 +55,8 @@ int main(int argc, char *argv[])
     int options[NUM_MODES] = {0};
 
     struct sample_data ir_data;
+    struct sample_data input_data;
+    struct sample_data output_data;
 
     // parse arguments
     while (index < argc && argv[index][0] == '-') {
@@ -105,8 +107,10 @@ int main(int argc, char *argv[])
         exit(0);
     }
 
-    // load imput file
-
+    // load input file
+    if (read_samples_from_wavfile(input_file, &input_data) == ERROR) {
+        exit(0);
+    }
 
     // load impulse response
     int IR_CODE = default_response;
@@ -130,8 +134,21 @@ int main(int argc, char *argv[])
         printf("using default response: %s\n", ir_names[IR_CODE]);
     }
 
-    printf("loading impulse response: %s\n", ir_files[IR_CODE]);
-    read_samples_from_wavfile(ir_files[IR_CODE], &ir_data);
+    if (read_samples_from_wavfile(ir_files[IR_CODE], &ir_data) == ERROR) {
+        exit(0);
+    }
+
+    // apply convolution reverb
+    //reverberate(&ir_data, &input_data, &output_data);
+
+    // play result or write to file
+    if (options[OUTPUT_FILE_SPECIFIED]) {
+        write_samples_to_wavfile(output_file, &input_data);
+    } else {
+        start_audio_systems();
+        play_audio_samples(&input_data);
+        terminate_audio_systems();
+    }
 
     return 0;
 }
