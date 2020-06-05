@@ -301,7 +301,7 @@ int long_convolution()
 
     Mtap_buff sample_buffer;
 
-    read_samples_from_wavfile("impulse_responses/nice_drum_room.wav", &ir);
+    read_samples_from_wavfile("impulse_responses/five_columns_long.wav", &ir);
 
     start_audio_systems();
     play_audio_samples(&ir);

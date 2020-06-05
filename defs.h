@@ -38,6 +38,11 @@ void read_coeff_from_file(char *path, struct impulse_response_data *coeff);
 void write_coeff_to_file(char *path, struct impulse_response_data *data);
 void convert_wav_to_impulse_response(struct sample_data *wave, struct impulse_response_data *h);
 void apply_convolution_stereo(struct sample_data *x, struct sample_data *h);
+int get_left_channel(struct sample_data *data, float *array, int array_len);
+int get_right_channel(struct sample_data *data, float *array, int array_len);
+
+// reverberator.c
+void reverberate(struct sample_data *impulse_response, struct sample_data *input, struct sample_data *output);
 
 // utils.c
 int convolve(float *x, int len, float *h, int M, int n, float *y_n);
@@ -48,5 +53,6 @@ void print_float_array(FILE *out, float *array, int n);
 void print_real_part(FILE *out, fftw_complex *array, int n);
 void print_complex_array_mag(FILE *out, fftw_complex *array, int n);
 fftw_complex complex_multiply(fftw_complex x, fftw_complex y);
+void clear_float_array(float *a, int len, float val);
 
 #endif // DEFS_H

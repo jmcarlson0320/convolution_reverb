@@ -223,3 +223,35 @@ void convert_wav_to_impulse_response(struct sample_data *wave, struct impulse_re
     h->scale_factor = 1.0f / sum;
     h->num_points = wave->num_frames;
 }
+
+int get_left_channel(struct sample_data *data, float *array, int array_len)
+{
+    if (!data || !array)
+        return ERROR;
+
+    int i;
+    for (i = 0; i < array_len; i++) {
+        if (i < data->num_frames)
+            array[i] = data->frames[i].left;
+        else
+            array[i] = 0.0f;
+    }
+
+    return i;
+}
+
+int get_right_channel(struct sample_data *data, float *array, int array_len)
+{
+    if (!data || !array)
+        return ERROR;
+
+    int i;
+    for (i = 0; i < array_len; i++) {
+        if (i < data->num_frames)
+            array[i] = data->frames[i].right;
+        else
+            array[i] = 0.0f;
+    }
+
+    return i;
+}

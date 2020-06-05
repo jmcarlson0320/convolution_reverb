@@ -70,3 +70,13 @@ fftw_complex complex_multiply(fftw_complex x, fftw_complex y)
 
     return result;
 }
+
+void clear_float_array(float *a, int len, float val)
+{
+    if (!a)
+        return;
+
+    for (int i = 0; i < len; i++) {
+        a[i] = val;
+    }
+}
