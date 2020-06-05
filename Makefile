@@ -16,6 +16,6 @@ fft_convolve.o: fft_convolve.h defs.h
 mtap_buff.o: mtap_buff.h
 
 clean:
-	rm *.o $(EXE) run_tests
+	rm *.o $(EXE) tests
 
 .PHONY: clean

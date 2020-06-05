@@ -301,7 +301,7 @@ int long_convolution()
 
     Mtap_buff sample_buffer;
 
-    read_samples_from_wavfile("impulse_responses/five_columns_long.wav", &ir);
+    read_samples_from_wavfile("impulse_responses/nice_drum_room.wav", &ir);
 
     start_audio_systems();
     play_audio_samples(&ir);
@@ -330,6 +330,7 @@ int long_convolution()
     }
 
     read_samples_from_wavfile("audio_files/dog.wav", &piano);
+
 
     // calculate number of sample blocks
     num_blocks = piano.num_frames / SEG_SIZE;
@@ -388,7 +389,7 @@ int long_convolution()
         }
         // 4. write sum to current output block
         for (int i = 0; i < SEG_SIZE; i++) {
-            output_samples[cur_block * SEG_SIZE + i] = accumulator[i] / num_conv * 0.5f;
+            output_samples[cur_block * SEG_SIZE + i] = accumulator[i] / num_conv * 0.8f;
         }
         cur_block++;
     }
@@ -408,7 +409,8 @@ int long_convolution()
     play_audio_samples(&convolved_piano);
     terminate_audio_systems();
 
-    write_samples_to_wavfile("audio_files/long_conv_piano.wav", &convolved_piano);
+
+    //write_samples_to_wavfile("audio_files/long_conv_piano.wav", &convolved_piano);
 
     // clean up
     for (int i = 0; i < num_conv; i++) {
