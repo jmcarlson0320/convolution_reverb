@@ -38,7 +38,7 @@ sample inputs are provided:
 
 * 'dog.wav' is a long input of a dog barking.
 * 'loop.wav' is a music clip with short percussive sounds.
-* 'jojo_bartmassey.wav' is a clip of my daughter reciting the famous tagline :)
+* 'jojo.wav' is a clip of my daughter reciting the famous tagline :)
 
 # Testing
 I did not perform testing in this project as systematically as I would have
@@ -96,7 +96,7 @@ represented by that block of samples. The blocks are pushed through the
 buffer as more blocks are added, and eventually every block gets fed into every
 convolution engine. And it works!!!
 
-    I am extremely satisfied with how it turned out, and am hooked on the
+I am extremely satisfied with how it turned out, and am hooked on the
 subject of DSP. There are still things to improve with the project though. I'd
 like to get this going in real-time, and to do that, requires not treating every
 IR slice the same way. For example, the first IR convolver should just use
