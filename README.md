@@ -40,11 +40,10 @@ sample inputs are provided:
 * 'loop.wav' is a music clip with short percussive sounds.
 * 'jojo.wav' is a clip of my daughter reciting the famous tagline :)
 
-# Testing
-I did not perform testing in this project as systematically as I would have
-liked. I setup a framework for unit-testing, but the tests actually written
-were more of a way to test drive the code as I worked on it. They can be ran
-by using 'make test' followed by './tests'.
+# Test
+To verify the program, a test script in the makefile can be ran using
+
+    make test
 
 # Reflection
 This project was *a bit* more challenging than I anticipated. And the problems
