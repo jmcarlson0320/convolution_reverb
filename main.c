@@ -3,25 +3,52 @@
 #include "defs.h"
 
 enum RESPONSE {
+    LARGE_DAMPED,
+    DEEP_SPACE,
+    ECHO,
     LONG,
+    MASONIC_LODGE,
+    DARK,
+    MUSIKVSL,
     DRUM_ROOM,
-    SPACE,
-    WOOD_ROOM,
+    STAR,
+    GARAGE,
+    OPERA_HOUSE,
+    SMALL_CAVE,
+    CHURCH,
     NUM_RESPONSES
 };
 
 char *ir_names[NUM_RESPONSES] = {
+    [LARGE_DAMPED] = "large_damped",
+    [DEEP_SPACE] = "deep_space",
+    [ECHO] = "echo",
     [LONG] = "long",
-    [DRUM_ROOM] = "drum",
-    [SPACE] = "space",
-    [WOOD_ROOM] ="wooden"
+    [MASONIC_LODGE] = "masonic_lodge",
+    [DARK] = "dark",
+    [MUSIKVSL] = "musikvsl",
+    [DRUM_ROOM] = "drum_room",
+    [STAR] = "star",
+    [GARAGE] = "garage",
+    [OPERA_HOUSE] = "opera_house",
+    [SMALL_CAVE] = "small_cave",
+    [CHURCH] = "church"
 };
 
 char *ir_files[NUM_RESPONSES] = {
+    [LARGE_DAMPED] = "impulse_responses/damped_lg_room.wav",
+    [DEEP_SPACE] = "impulse_responses/deep_space.wav",
+    [ECHO] = "impulse_responses/echo_hall.wav",
     [LONG] = "impulse_responses/five_columns_long.wav",
+    [MASONIC_LODGE] = "impulse_responses/masonic_lodge.wav",
+    [DARK] = "impulse_responses/med_dark.wav",
+    [MUSIKVSL] = "impulse_responses/musikvereinsaal.wav",
     [DRUM_ROOM] = "impulse_responses/nice_drum_room.wav",
-    [SPACE] = "",
-    [WOOD_ROOM] =""
+    [STAR] = "impulse_responses/on_a_star.wav",
+    [GARAGE] = "impulse_responses/parking_garage.wav",
+    [OPERA_HOUSE] = "impulse_responses/scala_milan_opera_house.wav",
+    [SMALL_CAVE] = "impulse_responses/small_cave.wav",
+    [CHURCH] = "impulse_responses/st_nicolas_church.wav"
 };
 
 enum {
