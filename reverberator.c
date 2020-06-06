@@ -1,3 +1,22 @@
+/*
+ * this is my implementation of my best understanding of the diagram
+ * "reverbConvolver" in the blog:
+ * https://dvcs.w3.org/hg/audio/raw-file/tip/webaudio/convolution.html
+ *
+ * There weren't many details for how to implement it, but what I came up with
+ * gives good results.
+ *
+ * Basic operation is as follows:
+ * a very long impulse response is sliced into 4k-sample pieces, each piece is
+ * given to a convolution engine. The input signal is broken up into 4k-sample
+ * blocks, and each block is pipelined through the convolution engines.
+ * Everytime a new block is added to the input buffer, the oldest block is
+ * written over. The blocks shift through the buffer in line. each convolver
+ * takes as input the appropriate sample block determined by "delay taps" into
+ * the input buffer. I'll try to explain it better in the README. It was VERY
+ * tricky to figure out!
+ *
+ * */
 #include "defs.h"
 #include "mtap_buff.h"
 #include "fft_convolve.h"

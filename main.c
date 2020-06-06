@@ -1,3 +1,7 @@
+/*
+ * I tried to implement the unix style arguments/options. The program needs to
+ * be invoked with arguments/options in the order specified by the usage msg.
+ * */
 #include <stdio.h>
 #include <string.h>
 #include "defs.h"

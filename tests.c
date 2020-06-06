@@ -1,3 +1,8 @@
+/*
+ * These are not so much unit-tests as they are prototyping functions for
+ * working out the various pieces of the project. What is in here are the
+ * final iterations of that.
+ * */
 #include "unit_test.h"
 #include "defs.h"
 #include "fft_convolve.h"

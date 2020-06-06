@@ -2,22 +2,48 @@
 
 #include <math.h>
 
+/*
+ * calculates the linear interpolation given a fraction and a min/max
+ * norm: the fraction to interpolate
+ * min/max: the range to interpolate over
+ * */
 float lerp(float norm, float min, float max)
 {
     return (max - min) * norm + min;
 }
 
+/*
+ * calculates the fraction of a value within a given min/max range
+ * the opposite of lerp
+ * value: the value to convert to a fraction
+ * min/max: the range to normalize over
+ * */
 float norm(float value, float min, float max)
 {
     return (value - min) / (max - min);
 }
 
+/*
+ * maps a given value with a certain range to a value in another range
+ * value: the value to map
+ * srcMin/Max: the range the value is associated with
+ * destMin/Max: the range to map to
+ * */
 float map(float value, float srcMin, float srcMax, float destMin, float destMax)
 {
     float n = norm(value, srcMin, srcMax);
     return lerp(n, destMin, destMax);
 }
 
+/*
+ * performs direct convolution in the time-domain
+ * x: source signal
+ * len: length of source signal
+ * h: impulse response signal
+ * M: length of impulse response
+ * n: index of value in x
+ * y_n: the value of the convolution (y[n])
+ * */
 int convolve(float *x, int len, float *h, int M, int n, float *y_n)
 {
     if (!x || !h || !y_n)

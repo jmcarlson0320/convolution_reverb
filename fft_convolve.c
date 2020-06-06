@@ -7,8 +7,6 @@
 
 #include "defs.h"
 
-// TODO
-// clear buffers
 void init_convolver(Convolver *conv, float *ir, int len, int segment_size)
 {
     conv->ir_size = len;
@@ -74,22 +72,19 @@ void destroy_convolver(Convolver *conv)
 void fft_convolve(Convolver *conv, float *input, float *output)
 {
     /*
-     * Algorithm (add-overlap method)
-     *  1. perform fft on input, storing data in input_buff
-     *     (pad w/ zeros)
-     *  2. complex multiply with ir_frequency, storing data in
-     *     output_buff
-     *  3. perform ifft on output_buff (in-place if possible)
+     * Algorithm (add-overlap method from wikipedia)
+     *  1. perform fft on input
+     *  2. complex multiply with ir_frequency
+     *  3. perform ifft
      *  4. split output_buff in two: the first "sample_block_size"
      *     number of samples, and the remaining "ir_size - 1" samples
-     *     (the overlap)
+     *     (the current overlap)
      *  5. add prev_overlap to the output sample block and write to
-     *     out array
-     *  6. copy the overlap to prev_overlap
+     *     output array
+     *  6. copy the current overlap to prev_overlap
      *
      * */
 
-    // step 1
     // init a temporary array
     fftw_complex tmp[conv->dft_size];
     for (int i = 0; i < conv->dft_size; i++) {
@@ -111,17 +106,14 @@ void fft_convolve(Convolver *conv, float *input, float *output)
     // transform input to frequency domain
     fftw_one(conv->fft, conv->input_buff, tmp);
 
-    // step 2
     // perform convolution by multiplication in the frequency domain
     for (int i = 0; i < conv->dft_size; i++) {
         tmp[i] = complex_multiply(tmp[i], conv->ir_frequency[i]);
     }
 
-    // step 3
     // inverse transform back to time domain
     fftw_one(conv->ifft, tmp, conv->output_buff);
 
-    // step 4, 5, 6
     for (int i = 0; i < conv->dft_size; i++) {
         // combine output with existing overlap
         if (i < conv->ir_size - 1)
