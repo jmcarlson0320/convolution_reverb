@@ -26,12 +26,27 @@ provided for ubuntu users).
 * fftw
   * sudo apt install fftw-dev'
 
-Build by running 'make' from the command line
-Run using './reverb -l' to list the impuse responses.
-Run using './reverb -i impulse_response input_file.wav' to apply reverb and
-play the audio.
-Run using './reverb -i impulse_response -o output_file.wav input_file.wav' to
-apply reverb and write the result to a new wave file.
+Build by running
+
+    make
+
+Run using
+
+    ./reverb -l
+
+to list the impuse responses.
+
+Run using
+
+    ./reverb -i impulse_response input_file.wav
+
+to apply reverb and play the audio.
+
+Run using
+
+    ./reverb -i impulse_response -o output_file.wav input_file.wav
+
+to apply reverb and write the result to a new wave file.
 
 *Important*: this program only works with stereo 16-bit pcm wave files. Three
 sample inputs are provided:
